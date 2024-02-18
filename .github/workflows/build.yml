@@ -15,69 +15,55 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      sha: ${{ steps.get_sha.outputs.sha }}
+      sha: ${{steps.get_sha.outputs.sha}}
     steps:
       - id: get_sha
         run: curl https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha' | sed 's/^\(.\{7\}\).*/sha=\1/' >> $GITHUB_OUTPUT
-      - uses: actions/checkout@v4
-        with:
-          repository: SagerNet/sing-box
-          ref: dev-next
-          fetch-depth: 0
-      - uses: actions/setup-go@v5
-        with:
-          go-version: 'stable'
-          check-latest: true
-      - run: go mod tidy -e
-      - uses: actions/cache@v4
         with:
           path: |
-            ${{ github.workspace }}
+            ${{github.workspace}}
             ~/go/pkg/mod
-          key: cache-${{ github.sha }}-${{ github.run_number }}
+          key: cache-${{github.sha}}-${{github.run_number}}
       - uses: dev-drprasad/delete-tag-and-release@v1.0
         with:
           tag_name: quic
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          delete_release: true 
-          repo: ${{ github.repository	}}
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          delete_release: true
+          repo: ${{github.repository}}
 
   release: # Because of possible issues with accessing the API too quickly, we chose to split it into two jobs
     runs-on: ubuntu-latest 
     needs: prepare
     steps:
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
           gh release create "quic" \
-            --repo="${{ github.repository	}}" \
-            --title="${{ needs.prepare.outputs.sha }}" \
+            --repo="${{github.repository}}" \
+            --title="${{needs.prepare.outputs.sha}}" \
             --generate-notes 
       #- uses: svenstaro/upload-release-action@v2
       #  with:
-      #    repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #    repo_token: ${{secrets.GITHUB_TOKEN}}
       #    file: "version.txt"
       #    tag: quic
   build:
     strategy:
       matrix:
-        goamd: [ v1, v2, v3, v4 ]
+        goamd: [v1, v2, v3, v4]
     env:
       GOOS: linux
       GOARCH: amd64
-      GOAMD64: ${{ matrix.goamd }}
+      GOAMD64: ${{matrix.goamd}}
       CGO_ENABLED: 0
       TAGS: with_quic
     runs-on: ubuntu-latest
-    needs: [ prepare, release ]
+    needs: [prepare, release]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
         with:
-          path: |
-            ${{ github.workspace }}
-            ~/go/pkg/mod
-          key: cache-
+          repository: 'SagerNet/sing-box'
+          ref: 'dev-next'
       - uses: actions/setup-go@v5
         with:
           go-version: 'stable'
@@ -85,13 +71,13 @@ jobs:
       - name: build
         run : |
           make
-          mv sing-box sing-box-${{ env.GOOS }}-${{ env.GOARCH }}-${{ env.GOAMD64 }}
+          mv sing-box sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}
       - uses: actions/upload-artifact@v4
         with:
-          name: "sing-box-${{ env.GOOS }}-${{ env.GOARCH }}-${{ env.GOAMD64 }}"
-          path: "sing-box-${{ env.GOOS }}-${{ env.GOARCH }}-${{ env.GOAMD64 }}"
+          name: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}"
+          path: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}"
       - uses: svenstaro/upload-release-action@v2
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: "sing-box-${{ env.GOOS }}-${{ env.GOARCH }}-${{ env.GOAMD64 }}"
+          repo_token: ${{secrets.GITHUB_TOKEN}}
+          file: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}"
           tag: quic
