@@ -19,11 +19,6 @@ jobs:
     steps:
       - id: get_sha
         run: curl https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha' | sed 's/^\(.\{7\}\).*/sha=\1/' >> $GITHUB_OUTPUT
-        with:
-          path: |
-            ${{github.workspace}}
-            ~/go/pkg/mod
-          key: cache-${{github.sha}}-${{github.run_number}}
       - uses: dev-drprasad/delete-tag-and-release@v1.0
         with:
           tag_name: quic
