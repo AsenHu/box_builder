@@ -36,7 +36,7 @@ jobs:
             echo ${latestSha:0:7} > version.txt
             gh release delete --yes \
               --repo="${{github.repository}}" \
-              --cleanup-tag quic
+              --cleanup-tag quic || echo "Nothing to delete."
             gh release create "quic" \
               --repo="${{github.repository}}" \
               --title="${latestSha:0:7}" \
