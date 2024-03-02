@@ -19,8 +19,6 @@ jobs:
       sha: ${{steps.get_sha.outputs.sha}}
     steps:
       - id: get_sha
-        env:
-          ENV: ${{github.event.inputs.sha}}
         run: |
           if [ -z "${{github.event.inputs.sha}}" ]
           then
