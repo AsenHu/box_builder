@@ -17,10 +17,7 @@ jobs:
       - id: get_sha
         run: |
           latestSha=$(curl https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha')
-          if ! nowSha=$(curl -L https://github.com/AsenHu/box_builder/releases/download/quic/version.txt)
-          then
-            nowSha="false"
-          fi
+          nowSha=$(curl -L https://github.com/AsenHu/box_builder/releases/download/quic/version.txt) || nowSha="false"
           if [ "$latestSha" != "$nowSha" ]
           then
             echo "sha=$latestSha"  >> $GITHUB_OUTPUT
