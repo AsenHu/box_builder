@@ -13,14 +13,14 @@ on:
 jobs:
   prepare:
     runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ github.token }}
     outputs:
       sha: ${{steps.get_sha.outputs.sha}}
     steps:
       - id: get_sha
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
-          if "${{github.event.inputs.sha}}"
+          if [ "${{github.event.inputs.sha}}" ]
           then
             latestSha="${{github.event.inputs.sha}}"
           else
@@ -74,6 +74,8 @@ jobs:
           name: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}"
           path: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}"
       - name: upload
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
           gh release upload "quic" "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}" \
             --clobber \
@@ -107,6 +109,8 @@ jobs:
           name: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe"
           path: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe"
       - name: upload
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
           gh release upload "quic" "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe" \
             --clobber \
