@@ -1,5 +1,8 @@
 name: build
 
+permissions:
+  contents: write
+
 on:
   push:
   schedule:
@@ -18,7 +21,7 @@ jobs:
     steps:
       - id: get_sha
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{github.event.inputs.sha}}" ]
           then
@@ -75,7 +78,7 @@ jobs:
           path: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}"
       - name: upload
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "quic" "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}" \
             --clobber \
@@ -110,7 +113,7 @@ jobs:
           path: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe"
       - name: upload
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "quic" "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe" \
             --clobber \
