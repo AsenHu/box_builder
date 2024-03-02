@@ -1,12 +1,7 @@
 name: build
 
-permissions:
-  contents: write
-
 on:
   push:
-    branches:
-      - main
   schedule:
     - cron: "25 23 * * *"
   workflow_dispatch:
@@ -18,31 +13,30 @@ jobs:
       sha: ${{steps.get_sha.outputs.sha}}
     steps:
       - id: get_sha
-        run: curl https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha' | sed 's/^\(.\{7\}\).*/sha=\1/' >> $GITHUB_OUTPUT
-      - uses: dev-drprasad/delete-tag-and-release@v1.0
-        with:
-          tag_name: quic
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          delete_release: true
-          repo: ${{github.repository}}
-
-  release: # Because of possible issues with accessing the API too quickly, we chose to split it into two jobs
-    runs-on: ubuntu-latest 
-    needs: prepare
-    steps:
-      - env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
-          gh release create "quic" \
-            --repo="${{github.repository}}" \
-            --title="${{needs.prepare.outputs.sha}}" \
-            --generate-notes 
-      #- uses: svenstaro/upload-release-action@v2
-      #  with:
-      #    repo_token: ${{secrets.GITHUB_TOKEN}}
-      #    file: "version.txt"
-      #    tag: quic
-  build:
+          latestSha=$(curl https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha')
+          nowSha=$(curl -L https://github.com/AsenHu/box_builder/releases/download/quic/version.txt)
+          if [ "$latestSha" != "$nowSha" ]
+          then
+            echo "sha=$latestSha"  >> $GITHUB_OUTPUT
+            echo ${latestSha:0:7} > version.txt
+            gh release delete --yes \
+              --repo="${{github.repository}}" \
+              --cleanup-tag quic
+            gh release create "quic" \
+              --repo="${{github.repository}}" \
+              --title="${latestSha:0:7}" \
+              --generate-notes
+            gh release upload "quic" "version.txt" \
+              --clobber \
+              --repo="${{github.repository}}"
+          else
+            echo "sha=false" >> $GITHUB_OUTPUT
+            exit
+          fi
+
+  linux_build:
+    if: needs.prepare.outputs.sha != 'false'
     strategy:
       matrix:
         goamd: [v1, v2, v3, v4]
@@ -53,16 +47,13 @@ jobs:
       CGO_ENABLED: 0
       TAGS: with_quic
     runs-on: ubuntu-latest
-    needs: [prepare, release]
+    needs: prepare
     steps:
       - uses: actions/checkout@v4
         with:
           repository: 'SagerNet/sing-box'
-          ref: 'dev-next'
+          ref: ${{needs.prepare.outputs.sha}}
       - uses: actions/setup-go@v5
-        with:
-          go-version: 'stable'
-          check-latest: true
       - name: build
         run : |
           make
@@ -71,8 +62,41 @@ jobs:
         with:
           name: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}"
           path: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}"
-      - uses: svenstaro/upload-release-action@v2
+      - name: upload
+        run: |
+          gh release upload "quic" "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}" \
+            --clobber \
+            --repo="${{github.repository}}"
+
+  windows_build:
+    if: needs.prepare.outputs.sha != 'false'
+    strategy:
+      matrix:
+        goamd: [v1, v2, v3, v4]
+    env:
+      GOOS: windows
+      GOARCH: amd64
+      GOAMD64: ${{matrix.goamd}}
+      CGO_ENABLED: 0
+      TAGS: with_quic
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - uses: actions/checkout@v4
         with:
-          repo_token: ${{secrets.GITHUB_TOKEN}}
-          file: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}"
-          tag: quic
+          repository: 'SagerNet/sing-box'
+          ref: ${{needs.prepare.outputs.sha}}
+      - uses: actions/setup-go@v5
+      - name: build
+        run : |
+          make
+          mv sing-box.exe sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe"
+          path: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe"
+      - name: upload
+        run: |
+          gh release upload "quic" "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe" \
+            --clobber \
+            --repo="${{github.repository}}"
