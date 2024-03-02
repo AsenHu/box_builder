@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "25 23 * * *"
   workflow_dispatch:
+    inputs:
+      sha:
+        description: "The sha of the commit to build"
+        required: false
 
 jobs:
   prepare:
@@ -15,8 +19,15 @@ jobs:
       sha: ${{steps.get_sha.outputs.sha}}
     steps:
       - id: get_sha
+        env:
+          SHA: ${{github.event.inputs.sha}}
         run: |
-          latestSha=$(curl -L https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha')
+          if [ -z "$SHA" ]
+          then
+            latestSha="$(curl -L https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha')"
+          else
+            latestSha="$SHA"
+          fi
           nowSha=$(curl -L https://github.com/AsenHu/box_builder/releases/download/quic/version.txt) || nowSha="false"
           if [ "$latestSha" != "$nowSha" ]
           then
