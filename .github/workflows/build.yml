@@ -20,11 +20,11 @@ jobs:
     steps:
       - id: get_sha
         run: |
-          if [ -z "${{github.event.inputs.sha}}" ]
+          if "${{github.event.inputs.sha}}"
           then
-            latestSha="$(curl -L https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha')"
-          else
             latestSha="${{github.event.inputs.sha}}"
+          else
+            latestSha="$(curl -L https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha')"
           fi
           nowSha=$(curl -L https://github.com/AsenHu/box_builder/releases/download/quic/version.txt) || nowSha="false"
           if [ "$latestSha" != "$nowSha" ]
