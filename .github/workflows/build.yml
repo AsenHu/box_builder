@@ -9,6 +9,8 @@ on:
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     outputs:
       sha: ${{steps.get_sha.outputs.sha}}
     steps:
