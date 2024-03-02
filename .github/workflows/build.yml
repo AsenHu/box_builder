@@ -24,7 +24,7 @@ jobs:
           then
             latestSha="$(curl -L https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha')"
           else
-            latestSha="$SHA"
+            latestSha="${{github.event.inputs.sha}}"
           fi
           nowSha=$(curl -L https://github.com/AsenHu/box_builder/releases/download/quic/version.txt) || nowSha="false"
           if [ "$latestSha" != "$nowSha" ]
