@@ -33,10 +33,10 @@ jobs:
           if [ "$latestSha" != "$nowSha" ]
           then
             echo "sha=$latestSha"  >> $GITHUB_OUTPUT
-            echo ${latestSha:0:7} > version.txt
+            echo "$latestSha" > version.txt
             gh release delete --yes \
               --repo="${{github.repository}}" \
-              --cleanup-tag quic || echo "Nothing to delete."
+              --cleanup-tag quic
             gh release create "quic" \
               --repo="${{github.repository}}" \
               --title="${latestSha:0:7}" \
