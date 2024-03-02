@@ -20,9 +20,9 @@ jobs:
     steps:
       - id: get_sha
         env:
-          SHA: ${{github.event.inputs.sha}}
+          ENV: ${{github.event.inputs.sha}}
         run: |
-          if [ -z "$SHA" ]
+          if [ -z "${{github.event.inputs.sha}}" ]
           then
             latestSha="$(curl -L https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha')"
           else
