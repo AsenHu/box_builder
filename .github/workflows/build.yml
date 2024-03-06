@@ -37,7 +37,6 @@ jobs:
             gh release delete --yes \
               --repo="${{github.repository}}" \
               --cleanup-tag quic || echo "Nothing to delete."
-            sleep 1
             gh release create "quic" \
               --repo="${{github.repository}}" \
               --title="${latestSha:0:7}" \
