@@ -42,11 +42,11 @@ jobs:
               --cleanup-tag none || echo "Nothing to delete."
             gh release create "quic" \
               --repo="${{github.repository}}" \
-              --title="${latestSha:0:7}" \
+              --title="${latestSha:0:7}_quic" \
               --generate-notes
             gh release create "none" \
               --repo="${{github.repository}}" \
-              --title="${latestSha:0:7}" \
+              --title="${latestSha:0:7}_none" \
               --generate-notes
             gh release upload "quic" "version.txt" \
               --clobber \
