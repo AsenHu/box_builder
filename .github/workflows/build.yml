@@ -29,7 +29,7 @@ jobs:
           else
             latestSha="$(curl -L https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha')"
           fi
-          nowSha=$(curl -L https://github.com/AsenHu/box_builder/releases/download/quic/version.txt) || nowSha="false"
+          nowSha=$(curl -L https://github.com/AsenHu/box_builder/releases/download/none/version.txt) || nowSha="false"
           if [ "$latestSha" != "$nowSha" ]
           then
             echo "sha=$latestSha"  >> $GITHUB_OUTPUT
@@ -37,12 +37,21 @@ jobs:
             gh release delete --yes \
               --repo="${{github.repository}}" \
               --cleanup-tag quic || echo "Nothing to delete."
-            sleep 1
+            gh release delete --yes \
+              --repo="${{github.repository}}" \
+              --cleanup-tag none || echo "Nothing to delete."
             gh release create "quic" \
               --repo="${{github.repository}}" \
               --title="${latestSha:0:7}" \
               --generate-notes
+            gh release create "none" \
+              --repo="${{github.repository}}" \
+              --title="${latestSha:0:7}" \
+              --generate-notes
             gh release upload "quic" "version.txt" \
+              --clobber \
+              --repo="${{github.repository}}"
+            gh release upload "none" "version.txt" \
               --clobber \
               --repo="${{github.repository}}"
           else
@@ -50,7 +59,7 @@ jobs:
             exit
           fi
 
-  linux_build:
+  quic_linux_build:
     if: needs.prepare.outputs.sha != 'false'
     strategy:
       matrix:
@@ -75,10 +84,6 @@ jobs:
         run : |
           make
           mv sing-box sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}"
-          path: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}"
       - name: upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -87,7 +92,7 @@ jobs:
             --clobber \
             --repo="${{github.repository}}"
 
-  windows_build:
+  quic_windows_build:
     if: needs.prepare.outputs.sha != 'false'
     strategy:
       matrix:
@@ -112,14 +117,42 @@ jobs:
         run : |
           make
           mv sing-box.exe sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe
-      - uses: actions/upload-artifact@v4
-        with:
-          name: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe"
-          path: "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe"
       - name: upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "quic" "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe" \
+            --clobber \
+            --repo="${{github.repository}}"
+
+  none_linux_build:
+    if: needs.prepare.outputs.sha != 'false'
+    strategy:
+      matrix:
+        goamd: [v1, v2, v3, v4]
+    env:
+      GOOS: linux
+      GOARCH: amd64
+      GOAMD64: ${{matrix.goamd}}
+      CGO_ENABLED: 0
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: 'SagerNet/sing-box'
+          ref: ${{needs.prepare.outputs.sha}}
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+      - name: build
+        run : |
+          make
+          mv sing-box sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}
+      - name: upload
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "none" "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}" \
             --clobber \
             --repo="${{github.repository}}"
