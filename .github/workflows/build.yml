@@ -135,6 +135,7 @@ jobs:
       GOARCH: amd64
       GOAMD64: ${{matrix.goamd}}
       CGO_ENABLED: 0
+      TAGS: ""
     runs-on: ubuntu-latest
     needs: prepare
     steps:
