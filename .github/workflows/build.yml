@@ -50,48 +50,58 @@ jobs:
             exit
           fi
 
-  quic_linux_build:
+  quic_build:
     if: needs.prepare.outputs.sha != 'false'
     strategy:
       matrix:
-        goamd: [v1, v2, v3, v4]
-    env:
-      GOOS: linux
-      GOARCH: amd64
-      GOAMD64: ${{matrix.goamd}}
-      CGO_ENABLED: 0
-      TAGS: with_quic
-    runs-on: ubuntu-latest
-    needs: prepare
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: 'SagerNet/sing-box'
-          ref: ${{needs.prepare.outputs.sha}}
-      - uses: actions/setup-go@v5
-        with:
-          go-version: 'stable'
-      - name: build
-        run : |
-          make
-          mv sing-box sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}
-      - name: upload
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload "quic" "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}" \
-            --clobber \
-            --repo="${{github.repository}}"
+        include:
+          - name: sing-box-linux-amd64-v1
+            goos: linux
+            goarch: amd64
+            goamd64: v1
 
-  quic_windows_build:
-    if: needs.prepare.outputs.sha != 'false'
-    strategy:
-      matrix:
-        goamd: [v1, v2, v3, v4]
+          - name: sing-box-linux-amd64-v2
+            goos: linux
+            goarch: amd64
+            goamd64: v2
+
+          - name: sing-box-linux-amd64-v3
+            goos: linux
+            goarch: amd64
+            goamd64: v3
+
+          - name: sing-box-linux-amd64-v4
+            goos: linux
+            goarch: amd64
+            goamd64: v4
+
+          - name: sing-box-windows-amd64-v1
+            goos: windows
+            goarch: amd64
+            goamd64: v1
+
+          - name: sing-box-windows-amd64-v2
+            goos: windows
+            goarch: amd64
+            goamd64: v2
+
+          - name: sing-box-windows-amd64-v3
+            goos: windows
+            goarch: amd64
+            goamd64: v3
+
+          - name: sing-box-windows-amd64-v4
+            goos: windows
+            goarch: amd64
+            goamd64: v4
+
+          - name: sing-box-linux-386
+            goos: linux
+            goarch: 386
     env:
-      GOOS: windows
-      GOARCH: amd64
-      GOAMD64: ${{matrix.goamd}}
+      GOOS: ${{matrix.goos}}
+      GOARCH: ${{matrix.goarch}}
+      GOAMD64: ${{matrix.goamd64}}
       CGO_ENABLED: 0
       TAGS: with_quic
     runs-on: ubuntu-latest
@@ -107,11 +117,12 @@ jobs:
       - name: build
         run : |
           make
-          mv sing-box.exe sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe
+          xz -9cv sing-box || xz -9cv sing-box.exe
+          mv sing-box.xz ${{matrix.name}}.xz || mv sing-box.exe.xz ${{matrix.name}}.xz
       - name: upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "quic" "sing-box-${{env.GOOS}}-${{env.GOARCH}}-${{env.GOAMD64}}.exe" \
+          gh release upload "quic" "${{matrix.name}}.xz" \
             --clobber \
             --repo="${{github.repository}}"
