@@ -117,8 +117,7 @@ jobs:
       - name: build
         run : |
           make
-          # xz -9cv sing-box || xz -9cv sing-box.exe
-          mv sing-box.xz ${{matrix.name}}.xz || mv sing-box.exe.xz ${{matrix.name}}.xz
+          xz -9cv sing-box > ${{matrix.name}}.xz || xz -9cv sing-box.exe > ${{matrix.name}}.xz
       - name: upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
