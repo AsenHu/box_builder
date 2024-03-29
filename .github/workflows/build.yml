@@ -117,7 +117,7 @@ jobs:
       - name: build
         run : |
           make
-          xz -9cv sing-box || xz -9cv sing-box.exe
+          # xz -9cv sing-box || xz -9cv sing-box.exe
           mv sing-box.xz ${{matrix.name}}.xz || mv sing-box.exe.xz ${{matrix.name}}.xz
       - name: upload
         env:
