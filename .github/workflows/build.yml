@@ -14,12 +14,10 @@ on:
         required: false
 
 jobs:
-  prepare:
+  build:
     runs-on: ubuntu-latest
-    outputs:
-      sha: ${{steps.get_sha.outputs.sha}}
     steps:
-      - id: get_sha
+      - name: get_sha
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -30,94 +28,160 @@ jobs:
             latestSha="$(curl -L https://api.github.com/repos/SagerNet/sing-box/commits/dev-next | jq -r '.sha')"
           fi
           nowSha=$(curl -L https://github.com/AsenHu/box_builder/releases/download/quic/version.txt) || nowSha="false"
-          if [ "$latestSha" != "$nowSha" ]
+          if [ "$latestSha" == "$nowSha" ]
           then
-            echo "sha=$latestSha"  >> $GITHUB_OUTPUT
-            echo "$latestSha" > version.txt
-            gh release delete --yes \
-              --repo="${{github.repository}}" \
-              --cleanup-tag quic || echo "Nothing to delete."
-            sleep 1
-            gh release create "quic" \
-              --repo="${{github.repository}}" \
-              --title="${latestSha:0:7}_quic" \
-              --generate-notes
-            gh release upload "quic" "version.txt" \
-              --clobber \
-              --repo="${{github.repository}}"
-          else
-            echo "sha=false" >> $GITHUB_OUTPUT
             exit
           fi
-
-  quic_build:
-    if: needs.prepare.outputs.sha != 'false'
-    strategy:
-      matrix:
-        include:
-          - name: sing-box-linux-amd64-v1
-            goos: linux
-            goarch: amd64
-            goamd64: v1
-
-          - name: sing-box-linux-amd64-v2
-            goos: linux
-            goarch: amd64
-            goamd64: v2
-
-          - name: sing-box-linux-amd64-v3
-            goos: linux
-            goarch: amd64
-            goamd64: v3
-
-          - name: sing-box-linux-amd64-v4
-            goos: linux
-            goarch: amd64
-            goamd64: v4
-
-          - name: sing-box-windows-amd64-v1
-            goos: windows
-            goarch: amd64
-            goamd64: v1
-
-          - name: sing-box-windows-amd64-v2
-            goos: windows
-            goarch: amd64
-            goamd64: v2
-
-          - name: sing-box-windows-amd64-v3
-            goos: windows
-            goarch: amd64
-            goamd64: v3
-
-          - name: sing-box-windows-amd64-v4
-            goos: windows
-            goarch: amd64
-            goamd64: v4
-    env:
-      GOOS: ${{matrix.goos}}
-      GOARCH: ${{matrix.goarch}}
-      GOAMD64: ${{matrix.goamd64}}
-      CGO_ENABLED: 0
-      TAGS: with_quic
-    runs-on: ubuntu-latest
-    needs: prepare
-    steps:
+          gh release delete --yes \
+            --repo="${{github.repository}}" \
+            --cleanup-tag quic || echo "Nothing to delete."
+          echo "sha=$latestSha"  >> $GITHUB_ENV
       - uses: actions/checkout@v4
         with:
           repository: 'SagerNet/sing-box'
-          ref: ${{needs.prepare.outputs.sha}}
+          ref: ${{env.sha}}
       - uses: actions/setup-go@v5
         with:
           go-version: 'stable'
-      - name: build
+      - env:
+          NAME: sing-box-linux-amd64-v1
+          dir: quic
+          GOOS: linux
+          GOARCH: amd64
+          GOAMD64: v1
+          CGO_ENABLED: 0
+          TAGS: with_quic
         run : |
-          make
-          xz -9cv sing-box > ${{matrix.name}}.xz || xz -9cv sing-box.exe > ${{matrix.name}}.xz
+          mkdir -p "$dir"
+          go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
+          xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
+      - env:
+          NAME: sing-box-linux-amd64-v2
+          dir: quic
+          GOOS: linux
+          GOARCH: amd64
+          GOAMD64: v2
+          CGO_ENABLED: 0
+          TAGS: with_quic
+        run : |
+          mkdir -p "$dir"
+          go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
+          xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
+      - env:
+          NAME: sing-box-linux-amd64-v3
+          dir: quic
+          GOOS: linux
+          GOARCH: amd64
+          GOAMD64: v3
+          CGO_ENABLED: 0
+          TAGS: with_quic
+        run : |
+          mkdir -p "$dir"
+          go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
+          xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
+      - env:
+          NAME: sing-box-linux-amd64-v4
+          dir: quic
+          GOOS: linux
+          GOARCH: amd64
+          GOAMD64: v4
+          CGO_ENABLED: 0
+          TAGS: with_quic
+        run : |
+          mkdir -p "$dir"
+          go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
+          xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
+      - env:
+          NAME: sing-box-windows-amd64-v1
+          dir: quic
+          GOOS: windows
+          GOARCH: amd64
+          GOAMD64: v1
+          CGO_ENABLED: 0
+          TAGS: with_quic
+        run : |
+          mkdir -p "$dir"
+          go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
+          xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
+      - env:
+          NAME: sing-box-windows-amd64-v2
+          dir: quic
+          GOOS: windows
+          GOARCH: amd64
+          GOAMD64: v2
+          CGO_ENABLED: 0
+          TAGS: with_quic
+        run : |
+          mkdir -p "$dir"
+          go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
+          xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
+      - env:
+          NAME: sing-box-windows-amd64-v3
+          dir: quic
+          GOOS: windows
+          GOARCH: amd64
+          GOAMD64: v3
+          CGO_ENABLED: 0
+          TAGS: with_quic
+        run : |
+          mkdir -p "$dir"
+          go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
+          xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
+      - env:
+          NAME: sing-box-windows-amd64-v4
+          dir: quic
+          GOOS: windows
+          GOARCH: amd64
+          GOAMD64: v4
+          CGO_ENABLED: 0
+          TAGS: with_quic
+        run : |
+          mkdir -p "$dir"
+          go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
+          xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
       - name: upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          sha: ${{env.sha}}
+          tag: quic
         run: |
-          gh release upload "quic" "${{matrix.name}}.xz" \
+          echo "$sha" > version.txt
+          gh release create "$tag" \
+            --repo="${{github.repository}}" \
+            --title="${sha:0:7}_$tag" \
+            --generate-notes
+          gh release upload "$tag" "version.txt" \
+            --clobber \
+            --repo="${{github.repository}}"
+          gh release upload "$tag" "./quic/sing-box-linux-amd64-v1.xz" \
+            --clobber \
+            --repo="${{github.repository}}"
+          gh release upload "$tag" "./quic/sing-box-linux-amd64-v2.xz" \
+            --clobber \
+            --repo="${{github.repository}}"
+          gh release upload "$tag" "./quic/sing-box-linux-amd64-v3.xz" \
+            --clobber \
+            --repo="${{github.repository}}"
+          gh release upload "$tag" "./quic/sing-box-linux-amd64-v4.xz" \
+            --clobber \
+            --repo="${{github.repository}}"
+          gh release upload "$tag" "./quic/sing-box-windows-amd64-v1.xz" \
+            --clobber \
+            --repo="${{github.repository}}"
+          gh release upload "$tag" "./quic/sing-box-windows-amd64-v2.xz" \
+            --clobber \
+            --repo="${{github.repository}}"
+          gh release upload "$tag" "./quic/sing-box-windows-amd64-v3.xz" \
+            --clobber \
+            --repo="${{github.repository}}"
+          gh release upload "$tag" "./quic/sing-box-windows-amd64-v4.xz" \
             --clobber \
             --repo="${{github.repository}}"
