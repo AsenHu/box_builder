@@ -54,6 +54,7 @@ jobs:
         run : |
           mkdir -p "$dir"
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
       - env:
           NAME: sing-box-linux-amd64-v2
@@ -66,6 +67,7 @@ jobs:
         run : |
           mkdir -p "$dir"
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
       - env:
           NAME: sing-box-linux-amd64-v3
@@ -78,6 +80,7 @@ jobs:
         run : |
           mkdir -p "$dir"
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
       - env:
           NAME: sing-box-linux-amd64-v4
@@ -90,6 +93,7 @@ jobs:
         run : |
           mkdir -p "$dir"
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
       - env:
           NAME: sing-box-windows-amd64-v1
@@ -102,6 +106,7 @@ jobs:
         run : |
           mkdir -p "$dir"
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
       - env:
           NAME: sing-box-windows-amd64-v2
@@ -114,6 +119,7 @@ jobs:
         run : |
           mkdir -p "$dir"
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
       - env:
           NAME: sing-box-windows-amd64-v3
@@ -126,6 +132,7 @@ jobs:
         run : |
           mkdir -p "$dir"
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
       - env:
           NAME: sing-box-windows-amd64-v4
@@ -138,6 +145,7 @@ jobs:
         run : |
           mkdir -p "$dir"
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
+          echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
       - name: upload
         env:
