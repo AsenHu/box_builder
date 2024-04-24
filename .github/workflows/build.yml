@@ -30,20 +30,24 @@ jobs:
           nowSha=$(curl -L https://github.com/AsenHu/box_builder/releases/download/quic/version.txt) || nowSha="false"
           if [ "$latestSha" == "$nowSha" ]
           then
-            exit
+            echo "stop=true" >> $GITHUB_ENV
+            exit 0
           fi
           gh release delete --yes \
             --repo="${{github.repository}}" \
             --cleanup-tag quic || echo "Nothing to delete."
           echo "sha=$latestSha"  >> $GITHUB_ENV
-      - uses: actions/checkout@v4
+      - if: env.stop != 'true'
+        uses: actions/checkout@v4
         with:
           repository: 'SagerNet/sing-box'
           ref: ${{env.sha}}
-      - uses: actions/setup-go@v5
+      - if: env.stop != 'true'
+        uses: actions/setup-go@v5
         with:
           go-version: 'stable'
-      - env:
+      - if: env.stop != 'true'
+        env:
           NAME: sing-box-linux-amd64-v1
           dir: quic
           GOOS: linux
@@ -56,7 +60,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - env:
+      - if: env.stop != 'true'
+        env:
           NAME: sing-box-linux-amd64-v2
           dir: quic
           GOOS: linux
@@ -69,7 +74,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - env:
+      - if: env.stop != 'true'
+        env:
           NAME: sing-box-linux-amd64-v3
           dir: quic
           GOOS: linux
@@ -82,7 +88,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - env:
+      - if: env.stop != 'true'
+        env:
           NAME: sing-box-linux-amd64-v4
           dir: quic
           GOOS: linux
@@ -95,7 +102,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - env:
+      - if: env.stop != 'true'
+        env:
           NAME: sing-box-windows-amd64-v1
           dir: quic
           GOOS: windows
@@ -108,7 +116,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - env:
+      - if: env.stop != 'true'
+        env:
           NAME: sing-box-windows-amd64-v2
           dir: quic
           GOOS: windows
@@ -121,7 +130,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - env:
+      - if: env.stop != 'true'
+        env:
           NAME: sing-box-windows-amd64-v3
           dir: quic
           GOOS: windows
@@ -134,7 +144,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - env:
+      - if: env.stop != 'true'
+        env:
           NAME: sing-box-windows-amd64-v4
           dir: quic
           GOOS: windows
@@ -148,6 +159,7 @@ jobs:
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
       - name: upload
+        if: env.stop != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           sha: ${{env.sha}}
