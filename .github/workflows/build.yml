@@ -25,7 +25,7 @@ jobs:
           then
             latestSha="${{github.event.inputs.sha}}"
           else
-            latestSha="$(curl -L https://api.github.com/repos/reF1nd/sing-box/commits/routestrategy | jq -r '.sha')"
+            latestSha="$(curl -L https://api.github.com/repos/reF1nd/sing-box/commits/routestrategy-dev | jq -r '.sha')"
           fi
           nowSha=$(curl -L https://github.com/AsenHu/box_builder/releases/download/quic/version.txt) || nowSha="false"
           if [ "$latestSha" == "$nowSha" ]
@@ -46,7 +46,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 'stable'
-      - if: env.stop != 'true'
+      - name: linux-amd64-v1
+        if: env.stop != 'true'
         env:
           NAME: sing-box-linux-amd64-v1
           dir: quic
@@ -60,7 +61,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - if: env.stop != 'true'
+      - name: linux-amd64-v2
+        if: env.stop != 'true'
         env:
           NAME: sing-box-linux-amd64-v2
           dir: quic
@@ -74,7 +76,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - if: env.stop != 'true'
+      - name: linux-amd64-v3
+        if: env.stop != 'true'
         env:
           NAME: sing-box-linux-amd64-v3
           dir: quic
@@ -88,7 +91,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - if: env.stop != 'true'
+      - name: linux-amd64-v4
+        if: env.stop != 'true'
         env:
           NAME: sing-box-linux-amd64-v4
           dir: quic
@@ -102,7 +106,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - if: env.stop != 'true'
+      - name: windows-amd64-v1
+        if: env.stop != 'true'
         env:
           NAME: sing-box-windows-amd64-v1
           dir: quic
@@ -116,7 +121,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - if: env.stop != 'true'
+      - name: windows-amd64-v2
+        if: env.stop != 'true'
         env:
           NAME: sing-box-windows-amd64-v2
           dir: quic
@@ -130,7 +136,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - if: env.stop != 'true'
+      - name: windows-amd64-v3
+        if: env.stop != 'true'
         env:
           NAME: sing-box-windows-amd64-v3
           dir: quic
@@ -144,7 +151,8 @@ jobs:
           go build -ldflags "-s -w" -tags "$TAGS" ./cmd/sing-box
           echo "Finish."
           xz -9cv sing-box > "./$dir/$NAME".xz || xz -9cv sing-box.exe > "./$dir/$NAME".xz
-      - if: env.stop != 'true'
+      - name: windows-amd64-v4
+        if: env.stop != 'true'
         env:
           NAME: sing-box-windows-amd64-v4
           dir: quic
